@@ -34,6 +34,8 @@ $member = [
     ],
 ];
 
+member_info($member,$sheet);
+
 
 // 總共天數
 $days = Total_days($start_date, $end_date);
@@ -83,6 +85,33 @@ function table_title($days, $sheet)
     $sheet->getStyle('A1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 }
 
+function member_info($members, $sheet, $startRow = 4)
+{
+    // 計算成員數量
+    $memberCount = count($members);
+
+    for ($i = 0; $i < $memberCount; $i++) {
+        $currentRow = $startRow + ($i * 3); // 每個成員佔用 3 行
+        
+        // 合併儲存格 (A 列，用於顯示 ID)
+        $sheet->mergeCells("A{$currentRow}:A" . ($currentRow + 2));
+        $sheet->setCellValue("A{$currentRow}", $members[$i]['id']);
+        
+        // 設置團隊 (B 列)
+        $sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 2));
+        $sheet->setCellValue("B{$currentRow}", $members[$i]['team']);
+        
+        // 設置成員名稱 (C 列)
+        $sheet->mergeCells("C{$currentRow}:C" . ($currentRow + 2));
+        $sheet->setCellValue("C{$currentRow}", $members[$i]['name']);
+        
+        // 水平與垂直居中
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+            ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+            ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+    }
+}
 // 首列表頭欄位
 function header_first($first_rows, $sheet)
 {
