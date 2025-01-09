@@ -185,7 +185,7 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
 
         // 設置 Attendance Status 與 Construction Site
         if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
-            $sheet->setCellValue("{$columnLetter}5", $entry['attendance_time'] . $entry['construction_site']);
+            $sheet->setCellValue("{$columnLetter}5",  $entry['attendance_status'] . $entry['construction_site']);
         }
 
         // 設置 Transition 與 Transition Team
