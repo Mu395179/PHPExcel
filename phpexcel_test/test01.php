@@ -180,17 +180,17 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
 
         // 設置 Attendance Time
         if (isset($entry['attendance_time'])) {
-            $sheet->setCellValue("{$columnLetter}3", $entry['attendance_time']);
+            $sheet->setCellValue("{$columnLetter}4", $entry['attendance_time']);
         }
 
         // 設置 Attendance Status 與 Construction Site
         if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
-            $sheet->setCellValue("{$columnLetter}4", $entry['attendance_time'] . $entry['construction_site']);
+            $sheet->setCellValue("{$columnLetter}5", $entry['attendance_time'] . $entry['construction_site']);
         }
 
         // 設置 Transition 與 Transition Team
         if (isset($entry['transition']) && $entry['transition'] === "Y" && isset($entry['transition_team'])) {
-            $sheet->setCellValue("{$columnLetter}5", $entry['transition_team']);
+            $sheet->setCellValue("{$columnLetter}6", $entry['transition_team']);
         }
     }
 }
