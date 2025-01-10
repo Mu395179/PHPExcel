@@ -50,7 +50,50 @@ $member_teamwork = [
         'construction_site'=>'EN',
         'transition'=>'Y',
         'transition_team'=>'Ina',
-    ]
+    ],
+    [
+        'id'=>'2',
+        'dispatch_day'=>'3',
+        'attendance_status'=>'支援',
+        'construction_site'=>'JP'
+
+    ],
+    [
+        'id'=>'2',
+        'dispatch_day'=>'5',
+        'attendance_status'=>'支援',
+        'attendance_time'=>'2',
+        'construction_site'=>'EN',
+        'transition'=>'Y',
+        'transition_team'=>'Kobo',
+    ],
+    [
+        'id'=>'3',
+        'dispatch_day'=>'2',
+        'attendance_status'=>'支援',
+        'attendance_time'=>'2',
+        'construction_site'=>'EN',
+        'transition'=>'Y',
+        'transition_team'=>'Zeta',
+    ],
+    [
+        'id'=>'3',
+        'dispatch_day'=>'10',
+        'attendance_status'=>'支援',
+        'attendance_time'=>'2',
+        'construction_site'=>'EN',
+        'transition'=>'Y',
+        'transition_team'=>'Kobo',
+    ],
+    [
+        'id'=>'4',
+        'dispatch_day'=>'12',
+        'attendance_status'=>'支援',
+        'attendance_time'=>'2',
+        'construction_site'=>'EN',
+        'transition'=>'Y',
+        'transition_team'=>'Kobo',
+    ],
     ];
 
 member_info($member,$sheet);
@@ -79,7 +122,7 @@ header_last($days, $sheet);
 Excel_show_days($days, $sheet);
 
 // 儲存檔案
-$file = 'demo_' . date('555') . '.xlsx';
+$file = 'demo_' . date('666') . '.xlsx';
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 $objWriter->save($file);
 
@@ -161,39 +204,81 @@ function member_info($members, $sheet, $startRow = 4)
     }
 }
 
-
 function support_report($start_date, $end_date, $member_teamwork, $sheet)
 {
     if ($sheet === null) {
         throw new Exception("Invalid sheet object.");
     }
 
-    $days = Total_days($start_date, $end_date);
-    $startTimestamp = strtotime($start_date);
+    // 計算總天數
+    $total_days = Total_days($start_date, $end_date);
 
+    // 開始日期的時間戳
+    $start_timestamp = strtotime($start_date);
+
+    // 整理資料：按 ID 與 dispatch_day 分組
+    $teamwork_map = [];
     foreach ($member_teamwork as $entry) {
-        $dispatchDay = (int)$entry['dispatch_day'];
-
-        // 計算對應的列位置
-        $columnIndex = $dispatchDay - 1; // 假設 dispatch_day 從 1 開始
-        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $columnIndex); // 第 4 列開始
-
-        // 設置 Attendance Time
-        if (isset($entry['attendance_time'])) {
-            $sheet->setCellValue("{$columnLetter}4", $entry['attendance_time']);
-        }
-
-        // 設置 Attendance Status 與 Construction Site
-        if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
-            $sheet->setCellValue("{$columnLetter}5",  $entry['attendance_status'] . $entry['construction_site']);
-        }
-
-        // 設置 Transition 與 Transition Team
-        if (isset($entry['transition']) && $entry['transition'] === "Y" && isset($entry['transition_team'])) {
-            $sheet->setCellValue("{$columnLetter}6", $entry['transition_team']);
-        }
+        $teamwork_map[$entry['id']][$entry['dispatch_day']] = $entry;
     }
+
+    // 開始列偏移（假設日期從第 4 列開始）
+    $column_offset = 3;
+    $initial_row = 4; // 每個 ID 起始行
+    $block_height = 3; // 每個 ID 的區塊高度
+
+    // 計算最後一欄的字母
+    $last_column_index = $column_offset + $total_days;
+    $last_column_letter = \PHPExcel_Cell::stringFromColumnIndex($last_column_index);
+
+    // 初始化每日加總數組
+    $daily_totals = array_fill(1, $total_days, 0);
+
+    foreach ($teamwork_map as $id => $dispatches) {
+        $current_row = $initial_row;
+        $total_hours = 0;
+
+        foreach ($dispatches as $dispatch_day => $entry) {
+            $columnIndex = $dispatch_day - 1; // 對應到日期的列
+            $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $columnIndex);
+
+            // 設置 Attendance Time
+            if (isset($entry['attendance_time'])) {
+                $sheet->setCellValue("{$columnLetter}{$current_row}", $entry['attendance_time']);
+                $total_hours += $entry['attendance_time']; // 累加總時數
+                $daily_totals[$dispatch_day] += $entry['attendance_time']; // 每日加總
+            }
+
+            // 設置 Attendance Status 與 Construction Site
+            if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
+                $sheet->setCellValue("{$columnLetter}" . ($current_row + 1), $entry['construction_site']);
+            }
+
+            // 設置 Transition 與 Transition Team
+            if (isset($entry['transition']) && $entry['transition'] === "Y" && isset($entry['transition_team'])) {
+                $sheet->setCellValue("{$columnLetter}" . ($current_row + 2), $entry['transition_team']);
+            }
+        }
+
+        // 在最後一欄輸入總時數
+        $sheet->setCellValue("{$last_column_letter}{$current_row}", (string)($total_hours));
+
+        // 每個 ID 的資料結束後，移動到下一區塊
+        $initial_row += $block_height;
+    }
+
+    // 設置最後一列的每日加總
+    $total_row = $initial_row; // 設定最後一列的位置
+    for ($day = 1; $day <= $total_days; $day++) {
+        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + ($day - 1));
+        $sheet->setCellValue("{$columnLetter}{$total_row}",  (string)($daily_totals[$day]));
+    }
+
+    // 在最後一列的第一個單元格設置標籤
+    // $sheet->setCellValue("A{$total_row}", "每日加總");
 }
+
+
 
 function dd($array)
 {
