@@ -143,7 +143,7 @@ function table_title($days, $sheet)
     $styleArray = [
         'borders' => [
             'allborders' => [
-                'style' => PHPExcel_Style_Border::BORDER_THICK, // 粗線
+                'style' => PHPExcel_Style_Border::BORDER_THIN, // 粗線
                 'color' => ['argb' => 'FF000000'], // 黑色
             ],
         ],
@@ -157,9 +157,9 @@ function header_first($first_rows, $sheet)
 {
     foreach ($first_rows as $key => $value) {
 
-        if($value=='A3'){
+        if ($value == 'A3') {
             $sheet->getColumnDimension('A')->setWidth(5);
-        }else{
+        } else {
             $sheet->getColumnDimension('B')->setWidth(20);
             $sheet->getColumnDimension('C')->setWidth(20);
         }
@@ -292,8 +292,19 @@ function member_info($members, $sheet, $startRow = 4)
 
         // 設置四邊框為黑色細線
         $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
-            ->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN)
-            ->getColor()->setARGB('FF000000'); // 黑色邊框
+        ->applyFromArray([
+            'alignment' => [
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ],
+            ],
+            'font' => ['bold' => true],
+        ]);
     }
 
     // 合計列
@@ -315,9 +326,19 @@ function member_info($members, $sheet, $startRow = 4)
         ->getFont()->setSize(12);
 
     // 設置四邊框為黑色細線
-    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
-        ->getBorders()->getAllBorders()->setBorderStyle(PHPExcel_Style_Border::BORDER_THIN)
-        ->getColor()->setARGB('FF000000'); // 黑色邊框
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")->applyFromArray([
+        'alignment' => [
+            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+        ],
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THICK,
+                'color' => ['argb' => 'FF000000'],
+            ],
+        ],
+        'font' => ['bold' => true],
+    ]);
 
     // 設置合計列底色為 FFDC00
     $sheet->getStyle("A{$totalRow}:C{$totalRow}")
@@ -373,7 +394,7 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
 
             // 設置 Attendance Status 與 Construction Site
             if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
-                $sheet->setCellValue("{$columnLetter}" . ($current_row + 1), $entry['construction_site']);
+                $sheet->setCellValue("{$columnLetter}" . ($current_row + 1), $entry['attendance_status'] . $entry['construction_site']);
             }
 
             // 設置 Transition 與 Transition Team
@@ -391,11 +412,17 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
         $initial_row += $block_height;
     }
 
+
     // 設置最後一列的每日加總
     $total_row = $initial_row; // 設定最後一列的位置
     for ($day = 1; $day <= $total_days; $day++) {
         $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + ($day - 1));
         $sheet->setCellValue("{$columnLetter}{$total_row}", (string) ($daily_totals[$day]));
+        // 設置合計列底色為 FFDC00
+        $sheet->getStyle("{$columnLetter}{$total_row}")
+            ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle("{$columnLetter}{$total_row}")
+            ->getFill()->getStartColor()->setRGB('FFDC00');
     }
 
     // 設置儲存格樣式（判斷有無值）
@@ -415,19 +442,37 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
             $sheet->getRowDimension($row)->setRowHeight(20);
 
             // 設置樣式
-            $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray([
-                'alignment' => [
-                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                    'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-                ],
-                'borders' => [
-                    'allborders' => [
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
-                        'color' => ['argb' => 'FF000000'],
+
+            if($row===$total_row){
+                $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
                     ],
-                ],
-                'font' => ['bold' => true],
-            ]);
+                    'borders' => [
+                        'allborders' => [
+                            'style' => PHPExcel_Style_Border::BORDER_THICK,
+                            'color' => ['argb' => 'FF000000'],
+                        ],
+                    ],
+                    'font' => ['bold' => true],
+                ]);
+            }else{
+                $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    ],
+                    'borders' => [
+                        'allborders' => [
+                            'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'color' => ['argb' => 'FF000000'],
+                        ],
+                    ],
+                    'font' => ['bold' => true],
+                ]);
+            }
+            
         }
     }
 }
