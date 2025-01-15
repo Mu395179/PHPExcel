@@ -166,5 +166,5 @@ function to($url){
     header("location:".$url);
 }
 
-$Dispatch_records=new DB('dispatch_records');
+// $Dispatch_records=new DB('dispatch_records');
 

@@ -9,79 +9,79 @@ $sheet = $objPHPExcel->getActiveSheet();
 
 
 // 時間範圍
-$start_date = "2024-09-01";
-$end_date = "2024-09-15";
+// $start_date = "2024-09-01";
+// $end_date = "2024-09-15";
 
-$member = [
-    [
-        'id' => '1',
-        'team' => 'holoEn',
-        'name' => 'Gura',
-    ],
-    [
-        'id' => '2',
-        'team' => 'holoEn',
-        'name' => 'Irys',
-    ],
-    [
-        'id' => '3',
-        'team' => 'holoEn',
-        'name' => 'Ame',
-    ],
-    [
-        'id' => '4',
-        'team' => 'holoEn',
-        'name' => 'Gigi',
-    ],
-];
+// $member = [
+//     [
+//         'id' => '1',
+//         'team' => 'holoEn',
+//         'name' => 'Gura',
+//     ],
+//     [
+//         'id' => '2',
+//         'team' => 'holoEn',
+//         'name' => 'Irys',
+//     ],
+//     [
+//         'id' => '3',
+//         'team' => 'holoEn',
+//         'name' => 'Ame',
+//     ],
+//     [
+//         'id' => '4',
+//         'team' => 'holoEn',
+//         'name' => 'Gigi',
+//     ],
+// ];
 
-$member_teamwork = [
-    [
-        'id' => '1',
-        'dispatch_day' => '10',
-        'attendance_status' => '支援',
-        'attendance_time' => '2',
-        'construction_site' => 'EN',
-        'transition' => 'Y',
-        'transition_team' => 'Ina',
-    ],
-    [
-        'id' => '2',
-        'dispatch_day' => '5',
-        'attendance_status' => '支援',
-        'attendance_time' => '2',
-        'construction_site' => 'EN',
-        'transition' => 'Y',
-        'transition_team' => 'Kobo',
-    ],
-    [
-        'id' => '3',
-        'dispatch_day' => '2',
-        'attendance_status' => '支援',
-        'attendance_time' => '2',
-        'construction_site' => 'EN',
-        'transition' => 'Y',
-        'transition_team' => 'Zeta',
-    ],
-    [
-        'id' => '3',
-        'dispatch_day' => '10',
-        'attendance_status' => '支援',
-        'attendance_time' => '2',
-        'construction_site' => 'EN',
-        'transition' => 'Y',
-        'transition_team' => 'Kobo',
-    ],
-    [
-        'id' => '4',
-        'dispatch_day' => '12',
-        'attendance_status' => '支援',
-        'attendance_time' => '2',
-        'construction_site' => 'EN',
-        'transition' => 'Y',
-        'transition_team' => 'Kobo',
-    ],
-];
+// $member_teamwork = [
+//     [
+//         'id' => '1',
+//         'dispatch_day' => '10',
+//         'attendance_status' => '支援',
+//         'attendance_time' => '2',
+//         'construction_site' => 'EN',
+//         'transition' => 'Y',
+//         'transition_team' => 'Ina',
+//     ],
+//     [
+//         'id' => '2',
+//         'dispatch_day' => '5',
+//         'attendance_status' => '支援',
+//         'attendance_time' => '2',
+//         'construction_site' => 'EN',
+//         'transition' => 'Y',
+//         'transition_team' => 'Kobo',
+//     ],
+//     [
+//         'id' => '3',
+//         'dispatch_day' => '2',
+//         'attendance_status' => '支援',
+//         'attendance_time' => '2',
+//         'construction_site' => 'EN',
+//         'transition' => 'Y',
+//         'transition_team' => 'Zeta',
+//     ],
+//     [
+//         'id' => '3',
+//         'dispatch_day' => '10',
+//         'attendance_status' => '支援',
+//         'attendance_time' => '2',
+//         'construction_site' => 'EN',
+//         'transition' => 'Y',
+//         'transition_team' => 'Kobo',
+//     ],
+//     [
+//         'id' => '4',
+//         'dispatch_day' => '12',
+//         'attendance_status' => '支援',
+//         'attendance_time' => '2',
+//         'construction_site' => 'EN',
+//         'transition' => 'Y',
+//         'transition_team' => 'Kobo',
+//     ],
+// ];
 
 member_info($member, $sheet);
 support_report($start_date, $end_date, $member_teamwork, $sheet);
