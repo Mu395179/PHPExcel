@@ -244,56 +244,19 @@ if ($total > 0) {
 
 	$seq = 0;
 	while ($row = $mDB->fetchRow(2)) {
-		$dispatch_id = $row['dispatch_id'];
-		$dispatch_year = $row['dispatch_year'];
-		$dispatch_month = $row['dispatch_month'];
-		$dispatch_day = $row['dispatch_day'];
-		$employee_id = $row['employee_id'];
-		$employee_name = $row['employee_name'];
-		$team_id = $row['team_id'];
-		$team_name = $row['team_name'];
-
-		$team_id2 = $row['team_id2'];
-		$team_name2 = $row['team_name2'];
-
-		$team_construction_id = $row['team_construction_id'];
-		$construction_site = $row['construction_site'];
-
-		if (!empty($employee_id)) {
+		$members[] = [
+			'team' => $row['team_name'],
+			'name' => $row['employee_name'],
+			'employee_id' => $row['employee_id'],
+		];
 
 
-			//再取得各員工的資料
-			$Qry2 = "SELECT a.dispatch_id,a.dispatch_date,YEAR(a.dispatch_date) AS dispatch_year,MONTH(a.dispatch_date) AS dispatch_month,DAY(a.dispatch_date) AS dispatch_day
-				,b.employee_id,b.manpower,b.attendance_day,b.attendance_status,b.transition,b.transition_start,b.transition_end
-				,c.team_name,d.team_name as transition_team_name
-				FROM dispatch a
-				LEFT JOIN dispatch_member b ON b.dispatch_id = a.dispatch_id
-				LEFT JOIN team c ON c.team_id = b.team_id
-				LEFT JOIN team d ON d.team_id = b.transition_team_id
-				WHERE a.dispatch_date >= '$start_date' AND a.dispatch_date <= '$end_date' AND a.ConfirmSending = 'Y' AND b.employee_id = '$employee_id'
-				ORDER BY b.employee_id";
-
-			$mDB2->query($Qry2);
-			$SUMMARY = 0;
-			if ($mDB2->rowCount() > 0) {
-
-
-
-				while ($row2 = $mDB2->fetchRow(2)) {
-
-					// 員工資訊
-					member_info($member, $sheet);
-
-					// 支援報表
-					support_report($start_date, $end_date, $member_teamwork, $sheet);
-
-
-				}
-			}
-		}
 	}
 }
-
+// 員工資訊
+member_info($members, $sheet);
+// 支援報表
+support_report($start_date, $end_date, $member_teamwork, $sheet);
 
 $mDB2->remove();
 $mDB->remove();
@@ -301,234 +264,236 @@ $mDB->remove();
 // 計算日期範圍的天數
 function Total_days($start_date, $end_date)
 {
-	$start_timestamp = strtotime($start_date);
-	$end_timestamp = strtotime($end_date);
-	$days_difference = ceil(($end_timestamp - $start_timestamp) / (60 * 60 * 24)) + 1; // 加 1 包含開始日
-	return $days_difference;
+    $start_timestamp = strtotime($start_date);
+    $end_timestamp = strtotime($end_date);
+    $days_difference = ceil(($end_timestamp - $start_timestamp) / (60 * 60 * 24)) + 1; // 加 1 包含開始日
+    return $days_difference;
 }
 
 // 標題
 function table_title($days, $sheet)
 {
-	$columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $days);
-	$sheet->mergeCells('A1:' . $columnLetter . '2');
-	$sheet->setCellValue('A1', '團隊報表');
+    $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $days);
+    $sheet->mergeCells('A1:' . $columnLetter . '2');
+    $sheet->setCellValue('A1', '團隊報表');
 
-	// 設定儲存格高度為40
-	$sheet->getRowDimension(1)->setRowHeight(20);
-	$sheet->getRowDimension(2)->setRowHeight(20);
+    // 設定儲存格高度為40
+    $sheet->getRowDimension(1)->setRowHeight(20);
+    $sheet->getRowDimension(2)->setRowHeight(20);
 
-	// 設定儲存格文字對齊
-	$sheet->getStyle('A1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-	$sheet->getStyle('A1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+    // 設定儲存格文字對齊
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('A1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-	// 設定邊框
-	$styleArray = [
-		'borders' => [
-			'allborders' => [
-				'style' => PHPExcel_Style_Border::BORDER_THIN, // 粗線
-				'color' => ['argb' => 'FF000000'], // 黑色
-			],
-		],
-	];
-	//設置字型大小
-	$sheet->getStyle('A1')->getFont()->setSize(30)->setBold(true);
-	$sheet->getStyle('A1:' . $columnLetter . '2')->applyFromArray($styleArray);
+    // 設定邊框
+    $styleArray = [
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN, // 粗線
+                'color' => ['argb' => 'FF000000'], // 黑色
+            ],
+        ],
+    ];
+    //設置字型大小
+    $sheet->getStyle('A1')->getFont()->setSize(30)->setBold(true);
+    $sheet->getStyle('A1:' . $columnLetter . '2')->applyFromArray($styleArray);
 }
-
 // 首列表頭欄位
 function header_first($first_rows, $sheet)
 {
-	foreach ($first_rows as $key => $value) {
+    foreach ($first_rows as $key => $value) {
 
-		if ($value == 'A3') {
-			$sheet->getColumnDimension('A')->setWidth(5);
-		} else {
-			$sheet->getColumnDimension('B')->setWidth(20);
-			$sheet->getColumnDimension('C')->setWidth(20);
-		}
-		// 設定儲存格值
-		$sheet->setCellValue($key, $value);
+        if ($value == 'A3') {
+            $sheet->getColumnDimension('A')->setWidth(5);
+        } else {
+            $sheet->getColumnDimension('B')->setWidth(20);
+            $sheet->getColumnDimension('C')->setWidth(20);
+        }
+        // 設定儲存格值
+        $sheet->setCellValue($key, $value);
 
-		// 設定文字置中
-		$sheet->getStyle($key)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-		$sheet->getStyle($key)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        // 設定文字置中
+        $sheet->getStyle($key)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($key)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-		// 設定粗體字
-		$sheet->getStyle($key)->getFont()->setBold(true);
+        // 設定粗體字
+        $sheet->getStyle($key)->getFont()->setBold(true);
 
-		// 設定底色
-		$sheet->getStyle($key)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-		$sheet->getStyle($key)->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
+        // 設定底色
+        $sheet->getStyle($key)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle($key)->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
 
-		// 設定邊框
-		$styleArray = [
-			'borders' => [
-				'allborders' => [
-					'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
-					'color' => ['argb' => 'FF000000'], // 黑色
-				],
-			],
-		];
-		$sheet->getStyle($key)->applyFromArray($styleArray);
-	}
+        // 設定邊框
+        $styleArray = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
+                    'color' => ['argb' => 'FF000000'], // 黑色
+                ],
+            ],
+        ];
+        $sheet->getStyle($key)->applyFromArray($styleArray);
+    }
 }
 
 // 最後列表頭欄位"合計"
 function header_last($days, $sheet)
 {
-	$columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $days);
+    $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $days);
 
-	// 設定文字置中
-	$sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-	$sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+    // 設定文字置中
+    $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-	// 設定底色
-	$sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-	$sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
+    // 設定底色
+    $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
 
-	// 設定粗體字
-	$sheet->getStyle($columnLetter . '3')->getFont()->setBold(true);
+    // 設定粗體字
+    $sheet->getStyle($columnLetter . '3')->getFont()->setBold(true);
 
-	// 設定邊框（全部細線）
-	$styleBorders = [
-		'borders' => [
-			'allborders' => [
-				'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
-				'color' => ['argb' => 'FF000000'], // 黑色
-			],
-		],
-	];
-	$sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
+    // 設定邊框（全部細線）
+    $styleBorders = [
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
+                'color' => ['argb' => 'FF000000'], // 黑色
+            ],
+        ],
+    ];
+    $sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
 
-	// 設定內容為 "合計"
-	$sheet->setCellValue($columnLetter . '3', '合計');
+    // 設定內容為 "合計"
+    $sheet->setCellValue($columnLetter . '3', '合計');
 
-	// 設定列寬度為 20
-	$sheet->getColumnDimension($columnLetter)->setWidth(20);
+    // 設定列寬度為 20
+    $sheet->getColumnDimension($columnLetter)->setWidth(20);
 }
+
 
 // 在工作表中填入日期
 function Excel_show_days($days, $sheet)
 {
-	if ($sheet === null) {
-		throw new Exception("Invalid sheet object.");
-	}
+    if ($sheet === null) {
+        throw new Exception("Invalid sheet object.");
+    }
 
-	for ($i = 0; $i < $days; $i++) { // 從 0 開始計算
-		$columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $i);
+    for ($i = 0; $i < $days; $i++) { // 從 0 開始計算
+        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $i);
 
-		// 設定日期
-		$sheet->setCellValue($columnLetter . '3', (string) ($i + 1)); // 數字從 1 開始
+        // 設定日期
+        $sheet->setCellValue($columnLetter . '3', (string) ($i + 1)); // 數字從 1 開始
 
-		// 設定文字置中
-		$sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-		$sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        // 設定文字置中
+        $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-		// 設定底色
-		$sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-		$sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
+        // 設定底色
+        $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
 
-		// 設定邊框（全部細線）
-		$styleBorders = [
-			'borders' => [
-				'allborders' => [
-					'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
-					'color' => ['argb' => 'FF000000'], // 黑色
-				],
-			],
-		];
-		$sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
-	}
+        // 設定邊框（全部細線）
+        $styleBorders = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
+                    'color' => ['argb' => 'FF000000'], // 黑色
+                ],
+            ],
+        ];
+        $sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
+    }
 }
 
+
+
+//員工資訊 
 function member_info($members, $sheet, $startRow = 4)
 {
-	// 計算成員數量
-	$memberCount = count($members);
+    // 計算成員數量
+    $memberCount = count($members);
 
-	for ($i = 0; $i < $memberCount; $i++) {
-		$currentRow = $startRow + ($i * 3); // 每個成員佔用 3 行
+    for ($i = 0; $i < $memberCount; $i++) {
+        $currentRow = $startRow + ($i * 3); // 每個成員佔用 3 行
 
-		// 合併儲存格 (A 列，用於顯示 ID)
-		$sheet->mergeCells("A{$currentRow}:A" . ($currentRow + 2));
-		$sheet->setCellValue("A{$currentRow}", $members[$i]['id']);
+        // 合併儲存格 (A 列，用於顯示 ID)
+        $sheet->mergeCells("A{$currentRow}:A" . ($currentRow + 2));
+        $sheet->setCellValue("A{$currentRow}", $i+1);
 
-		// 設置團隊 (B 列)
-		$sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 2));
-		$sheet->setCellValue("B{$currentRow}", $members[$i]['team']);
+        // 設置團隊 (B 列)
+        $sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 2));
+        $sheet->setCellValue("B{$currentRow}", $members[$i]['team']);
 
-		// 設置成員名稱 (C 列)
-		$sheet->mergeCells("C{$currentRow}:C" . ($currentRow + 2));
-		$sheet->setCellValue("C{$currentRow}", $members[$i]['name']);
+        // 設置成員名稱 (C 列)
+        $sheet->mergeCells("C{$currentRow}:C" . ($currentRow + 2));
+        $sheet->setCellValue("C{$currentRow}", $members[$i]['name']);
 
-		// 水平與垂直居中
-		$sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
-			->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-		$sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
-			->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        // 水平與垂直居中
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+            ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+            ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-		// 設置字體大小為 12
-		$sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
-			->getFont()->setSize(12);
+        // 設置字體大小為 12
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+            ->getFont()->setSize(12);
 
-		// 設置四邊框為黑色細線
-		$sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
-			->applyFromArray([
-				'alignment' => [
-					'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-					'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-				],
-				'borders' => [
-					'allborders' => [
-						'style' => PHPExcel_Style_Border::BORDER_THIN,
-						'color' => ['argb' => 'FF000000'],
-					],
-				],
-				'font' => ['bold' => true],
-			]);
-	}
+        // 設置四邊框為黑色細線
+        $sheet->getStyle("A{$currentRow}:C" . ($currentRow + 2))
+        ->applyFromArray([
+            'alignment' => [
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ],
+            ],
+            'font' => ['bold' => true],
+        ]);
+    }
 
-	// 合計列
-	$totalRow = $startRow + ($memberCount * 3); // 計算合計所在的行
-	$sheet->mergeCells("A{$totalRow}:C{$totalRow}"); // 合併 A~C 列
-	$sheet->setCellValue("A{$totalRow}", "合計"); // 設置值為「合計」
+    // 合計列
+    $totalRow = $startRow + ($memberCount * 3); // 計算合計所在的行
+    $sheet->mergeCells("A{$totalRow}:C{$totalRow}"); // 合併 A~C 列
+    $sheet->setCellValue("A{$totalRow}", "合計"); // 設置值為「合計」
 
-	// 設置居中對齊
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")
-		->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")
-		->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+    // 設置居中對齊
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
+        ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
+        ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-	// 設置加粗字體
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")->getFont()->setBold(true);
+    // 設置加粗字體
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")->getFont()->setBold(true);
 
-	// 設置字體大小為 12
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")
-		->getFont()->setSize(12);
+    // 設置字體大小為 12
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
+        ->getFont()->setSize(12);
 
-	// 設置四邊框為黑色細線
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")->applyFromArray([
-		'alignment' => [
-			'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-			'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-		],
-		'borders' => [
-			'allborders' => [
-				'style' => PHPExcel_Style_Border::BORDER_THICK,
-				'color' => ['argb' => 'FF000000'],
-			],
-		],
-		'font' => ['bold' => true],
-	]);
+    // 設置四邊框為黑色細線
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")->applyFromArray([
+        'alignment' => [
+            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+        ],
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THICK,
+                'color' => ['argb' => 'FF000000'],
+            ],
+        ],
+        'font' => ['bold' => true],
+    ]);
 
-	// 設置合計列底色為 FFDC00
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")
-		->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-	$sheet->getStyle("A{$totalRow}:C{$totalRow}")
-		->getFill()->getStartColor()->setRGB('FFDC00');
+    // 設置合計列底色為 FFDC00
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
+        ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle("A{$totalRow}:C{$totalRow}")
+        ->getFill()->getStartColor()->setRGB('FFDC00');
 }
-
 // 支援團隊報表
 function support_report($start_date, $end_date, $member_teamwork, $sheet)
 {
