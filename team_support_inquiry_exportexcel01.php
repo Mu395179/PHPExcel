@@ -126,6 +126,7 @@ require_once '/website/os/PHPExcel-1.8.1/Classes/PHPExcel.php';
 
 // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();
+$sheet = $objPHPExcel->getActiveSheet();
 
 // Set document properties
 $objPHPExcel->getProperties()->setCreator("PowerSales")
@@ -218,9 +219,6 @@ if (!empty($team_construction_id)) {
 $mDB->query($Qry);
 
 $total = $mDB->rowCount();
-
-$line = 1;
-
 if ($total > 0) {
 
 
@@ -277,6 +275,14 @@ if ($total > 0) {
 $mDB2->remove();
 $mDB->remove();
 
+
+function Total_days($start_date, $end_date)
+{
+    $start_timestamp = strtotime($start_date);
+    $end_timestamp = strtotime($end_date);
+    $days_difference = ceil(($end_timestamp - $start_timestamp) / (60 * 60 * 24)) + 1; // 加 1 包含開始日
+    return $days_difference;
+}
 
 // Rename worksheet
 $objPHPExcel->getActiveSheet()->setTitle("團隊支援表");
