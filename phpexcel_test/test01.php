@@ -83,8 +83,6 @@ $sheet = $objPHPExcel->getActiveSheet();
 //     ],
 // ];
 
-member_info($member, $sheet);
-support_report($start_date, $end_date, $member_teamwork, $sheet);
 
 // 總共天數
 $days = Total_days($start_date, $end_date);
@@ -107,6 +105,12 @@ header_last($days, $sheet);
 
 // 列出所有日期
 Excel_show_days($days, $sheet);
+
+// 員工資訊
+member_info($member, $sheet);
+
+// 支援報表
+support_report($start_date, $end_date, $member_teamwork, $sheet);
 
 // 儲存檔案
 $file = 'demo_' . date('666') . '.xlsx';
@@ -190,41 +194,6 @@ function header_first($first_rows, $sheet)
     }
 }
 
-
-// 在工作表中填入日期
-function Excel_show_days($days, $sheet)
-{
-    if ($sheet === null) {
-        throw new Exception("Invalid sheet object.");
-    }
-
-    for ($i = 0; $i < $days; $i++) { // 從 0 開始計算
-        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $i);
-
-        // 設定日期
-        $sheet->setCellValue($columnLetter . '3', (string) ($i + 1)); // 數字從 1 開始
-
-        // 設定文字置中
-        $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
-
-        // 設定底色
-        $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
-
-        // 設定邊框（全部細線）
-        $styleBorders = [
-            'borders' => [
-                'allborders' => [
-                    'style' => PHPExcel_Style_Border::BORDER_THIN, // 細線
-                    'color' => ['argb' => 'FF000000'], // 黑色
-                ],
-            ],
-        ];
-        $sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
-    }
-}
-
 // 最後列表頭欄位"合計"
 function header_last($days, $sheet)
 {
@@ -258,6 +227,47 @@ function header_last($days, $sheet)
     // 設定列寬度為 20
     $sheet->getColumnDimension($columnLetter)->setWidth(20);
 }
+
+
+// 在工作表中填入日期
+function Excel_show_days($start_date, $days, $sheet)
+{
+    if ($sheet === null) {
+        throw new Exception("Invalid sheet object.");
+    }
+
+
+    $startDate = new DateTime($start_date);
+
+    for ($i = 0; $i < $days; $i++) {
+        $currentDate = clone $startDate;
+        $currentDate->modify("+{$i} day"); 
+
+        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $i);
+
+ 
+        $sheet->setCellValue($columnLetter . '3', $currentDate->format('d')); 
+
+        $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+   
+        $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
+
+        $styleBorders = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN, 
+                    'color' => ['argb' => 'FF000000'], 
+                ],
+            ],
+        ];
+        $sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
+    }
+}
+
+
 
 //員工資訊 
 function member_info($members, $sheet, $startRow = 4)
