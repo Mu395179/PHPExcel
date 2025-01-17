@@ -9,79 +9,79 @@ $sheet = $objPHPExcel->getActiveSheet();
 
 
 // 時間範圍
-// $start_date = "2024-09-01";
-// $end_date = "2024-09-15";
+$start_date = "2024-09-01";
+$end_date = "2024-09-15";
 
-// $member = [
-//     [
-//         'id' => '1',
-//         'team' => 'holoEn',
-//         'name' => 'Gura',
-//     ],
-//     [
-//         'id' => '2',
-//         'team' => 'holoEn',
-//         'name' => 'Irys',
-//     ],
-//     [
-//         'id' => '3',
-//         'team' => 'holoEn',
-//         'name' => 'Ame',
-//     ],
-//     [
-//         'id' => '4',
-//         'team' => 'holoEn',
-//         'name' => 'Gigi',
-//     ],
-// ];
+$member = [
+    [
+        'id' => '1',
+        'team' => 'holoEn',
+        'name' => 'Gura',
+    ],
+    [
+        'id' => '2',
+        'team' => 'holoEn',
+        'name' => 'Irys',
+    ],
+    [
+        'id' => '3',
+        'team' => 'holoEn',
+        'name' => 'Ame',
+    ],
+    [
+        'id' => '4',
+        'team' => 'holoEn',
+        'name' => 'Gigi',
+    ],
+];
 
-// $member_teamwork = [
-//     [
-//         'id' => '1',
-//         'dispatch_day' => '10',
-//         'attendance_status' => '支援',
-//         'attendance_time' => '2',
-//         'construction_site' => 'EN',
-//         'transition' => 'Y',
-//         'transition_team' => 'Ina',
-//     ],
-//     [
-//         'id' => '2',
-//         'dispatch_day' => '5',
-//         'attendance_status' => '支援',
-//         'attendance_time' => '2',
-//         'construction_site' => 'EN',
-//         'transition' => 'Y',
-//         'transition_team' => 'Kobo',
-//     ],
-//     [
-//         'id' => '3',
-//         'dispatch_day' => '2',
-//         'attendance_status' => '支援',
-//         'attendance_time' => '2',
-//         'construction_site' => 'EN',
-//         'transition' => 'Y',
-//         'transition_team' => 'Zeta',
-//     ],
-//     [
-//         'id' => '3',
-//         'dispatch_day' => '10',
-//         'attendance_status' => '支援',
-//         'attendance_time' => '2',
-//         'construction_site' => 'EN',
-//         'transition' => 'Y',
-//         'transition_team' => 'Kobo',
-//     ],
-//     [
-//         'id' => '4',
-//         'dispatch_day' => '12',
-//         'attendance_status' => '支援',
-//         'attendance_time' => '2',
-//         'construction_site' => 'EN',
-//         'transition' => 'Y',
-//         'transition_team' => 'Kobo',
-//     ],
-// ];
+$member_teamwork = [
+    [
+        'id' => '1',
+        'dispatch_day' => '10',
+        'attendance_status' => '支援',
+        'attendance_time' => '2',
+        'construction_site' => 'EN',
+        'transition' => 'Y',
+        'transition_team' => 'Ina',
+    ],
+    [
+        'id' => '2',
+        'dispatch_day' => '5',
+        'attendance_status' => '支援',
+        'attendance_time' => '2',
+        'construction_site' => 'EN',
+        'transition' => 'Y',
+        'transition_team' => 'Kobo',
+    ],
+    [
+        'id' => '3',
+        'dispatch_day' => '2',
+        'attendance_status' => '支援',
+        'attendance_time' => '2',
+        'construction_site' => 'EN',
+        'transition' => 'Y',
+        'transition_team' => 'Zeta',
+    ],
+    [
+        'id' => '3',
+        'dispatch_day' => '10',
+        'attendance_status' => '支援',
+        'attendance_time' => '2',
+        'construction_site' => 'EN',
+        'transition' => 'Y',
+        'transition_team' => 'Kobo',
+    ],
+    [
+        'id' => '4',
+        'dispatch_day' => '12',
+        'attendance_status' => '支援',
+        'attendance_time' => '2',
+        'construction_site' => 'EN',
+        'transition' => 'Y',
+        'transition_team' => 'Kobo',
+    ],
+];
 
 
 // 總共天數
@@ -104,7 +104,7 @@ header_first($first_rows, $sheet);
 header_last($days, $sheet);
 
 // 列出所有日期
-Excel_show_days($days, $sheet);
+Excel_show_days($start_date,$days, $sheet);
 
 // 員工資訊
 member_info($member, $sheet);
@@ -232,34 +232,33 @@ function header_last($days, $sheet)
 // 在工作表中填入日期
 function Excel_show_days($start_date, $days, $sheet)
 {
+    $date = new DateTime($start_date);
+
     if ($sheet === null) {
         throw new Exception("Invalid sheet object.");
     }
 
-
-    $startDate = new DateTime($start_date);
-
     for ($i = 0; $i < $days; $i++) {
-        $currentDate = clone $startDate;
-        $currentDate->modify("+{$i} day"); 
+        $current_date = (clone $date)->modify("+$i days")->format('d'); // 每次加一天
+        $columnLetter = PHPExcel_Cell::stringFromColumnIndex(3 + $i); // 計算欄位字母
 
-        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $i);
+        // 設定日期
+        $sheet->setCellValue($columnLetter . '3', $current_date);
 
- 
-        $sheet->setCellValue($columnLetter . '3', $currentDate->format('d')); 
-
+        // 設定文字置中
         $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-   
+        // 設定底色
         $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 底色為 #7FDBFF
+        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 設置底色
 
+        // 設定邊框（細線）
         $styleBorders = [
             'borders' => [
                 'allborders' => [
-                    'style' => PHPExcel_Style_Border::BORDER_THIN, 
-                    'color' => ['argb' => 'FF000000'], 
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'], // 黑色
                 ],
             ],
         ];
