@@ -269,28 +269,28 @@ function member_info($members, $sheet, $startRow = 4)
     $memberCount = count($members);
 
     for ($i = 0; $i < $memberCount; $i++) {
-        $currentRow = $startRow + ($i * 3); // 每個成員佔用 3 行
+        $currentRow = $startRow + ($i * 6); // 每個成員佔用 6 行
 
         // 合併儲存格 (A 列，用於顯示 ID)
-        $sheet->mergeCells("A{$currentRow}:A" . ($currentRow + 2));
+        $sheet->mergeCells("A{$currentRow}:A" . ($currentRow + 5));
         $sheet->setCellValue("A{$currentRow}", $members[$i]['id']);
 
         // 設置團隊 (B 列)
-        $sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 2));
+        $sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 5));
         $sheet->setCellValue("B{$currentRow}", $members[$i]['name']);
 
         // 水平與垂直居中
-        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 2))
+        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
             ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 2))
+        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
             ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
         // 設置字體大小為 12
-        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 2))
+        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
             ->getFont()->setSize(12);
 
         // 設置四邊框為黑色細線
-        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 2))
+        $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
         ->applyFromArray([
             'alignment' => [
                 'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
@@ -307,8 +307,8 @@ function member_info($members, $sheet, $startRow = 4)
     }
 
     // 合計列
-    $totalRow = $startRow + ($memberCount * 3); // 計算合計所在的行
-    $sheet->mergeCells("A{$totalRow}:B{$totalRow}"); // 合併 A~C 列
+    $totalRow = $startRow + ($memberCount * 6); // 計算合計所在的行
+    $sheet->mergeCells("A{$totalRow}:B{$totalRow}"); // 合併 A~B 列
     $sheet->setCellValue("A{$totalRow}", "合計"); // 設置值為「合計」
 
     // 設置居中對齊
