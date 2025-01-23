@@ -36,7 +36,7 @@ $member_teamwork = [
         'dispatch_company' => '台積電',
         'team_id' => '2024A',
         'team_name' => '電工A組',
-        'attendance_time' => '2',
+        'dispatch_day' => '2',
         'construction_site' => '新竹廠',
         'manpower'=> '10',
         'workinghours'=> '4',
@@ -50,7 +50,7 @@ $member_teamwork = [
         'dispatch_company' => '華碩',
         'team_id' => '2024A',
         'team_name' => '電工A組',
-        'attendance_time' => '3',
+        'dispatch_day' => '3',
         'construction_site' => '新竹廠',
         'manpower'=> '10',
         'workinghours'=> '4',
@@ -63,7 +63,7 @@ $member_teamwork = [
         'dispatch_company' => '台達電',
         'team_id' => '2024A',
         'team_name' => '電工A組',
-        'attendance_time' => '6',
+        'dispatch_day' => '6',
         'construction_site' => '新竹廠',
         'manpower'=> '10',
         'workinghours'=> '4',
@@ -76,7 +76,7 @@ $member_teamwork = [
         'dispatch_company' => '聯發科',
         'team_id' => '2024A',
         'team_name' => '電工A組',
-        'attendance_time' => '8',
+        'dispatch_day' => '8',
         'construction_site' => '新竹廠',
         'manpower'=> '10',
         'workinghours'=> '4',
@@ -87,6 +87,14 @@ $member_teamwork = [
     ],
   
 ];
+
+// foreach ($member_teamwork as $key => $value) {
+
+//         $workmake[$value['id']['dispatch_day']]=$value;
+//         dd($workmake);
+// }
+
+
 
 
 // 總共天數
@@ -243,18 +251,25 @@ function Excel_show_days($start_date, $days, $sheet)
 
     for ($i = 0; $i < $days; $i++) {
         $current_date = (clone $date)->modify("+$i days")->format('d'); // 每次加一天
-        $columnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i); // 計算欄位字母
+        
+        // 計算起始和結束欄位字母
+        $startColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4);
+        $endColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4 + 3);
+        
+        // 合併儲存格
+        $mergedCells = $startColumnLetter . '3:' . $endColumnLetter . '3';
+        $sheet->mergeCells($mergedCells);
 
         // 設定日期
-        $sheet->setCellValue($columnLetter . '3', $current_date);
+        $sheet->setCellValue($startColumnLetter . '3', $current_date);
 
         // 設定文字置中
-        $sheet->getStyle($columnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle($columnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        $sheet->getStyle($mergedCells)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($mergedCells)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
         // 設定底色
-        $sheet->getStyle($columnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-        $sheet->getStyle($columnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 設置底色
+        $sheet->getStyle($mergedCells)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle($mergedCells)->getFill()->getStartColor()->setRGB('7FDBFF'); // 設置底色
 
         // 設定邊框（細線）
         $styleBorders = [
@@ -265,7 +280,7 @@ function Excel_show_days($start_date, $days, $sheet)
                 ],
             ],
         ];
-        $sheet->getStyle($columnLetter . '3')->applyFromArray($styleBorders);
+        $sheet->getStyle($mergedCells)->applyFromArray($styleBorders);
     }
 }
 
@@ -286,7 +301,7 @@ function member_info($members, $sheet, $startRow = 4)
 
         // 設置團隊 (B 列)
         $sheet->mergeCells("B{$currentRow}:B" . ($currentRow + 5));
-        $sheet->setCellValue("B{$currentRow}", $members[$i]['name']);
+        $sheet->setCellValue("B{$currentRow}", $members[$i]['company']);
 
         // 水平與垂直居中
         $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
@@ -317,24 +332,39 @@ function member_info($members, $sheet, $startRow = 4)
 
     // 合計列
     $totalRow = $startRow + ($memberCount * 6); // 計算合計所在的行
-    $sheet->mergeCells("A{$totalRow}:B{$totalRow}"); // 合併 A~B 列
+
+    // A欄垂直合併兩格
+    $sheet->mergeCells("A{$totalRow}:A" . ($totalRow + 1));
     $sheet->setCellValue("A{$totalRow}", "合計"); // 設置值為「合計」
 
+    // B欄第一格設置總人數
+    $sheet->setCellValue("B{$totalRow}", "總人數");
+
+    // B欄第二格設置總工數
+    $totalWork = $memberCount * 6; // 假設每個成員佔用 6 行即為總工數
+    $sheet->setCellValue("B" . ($totalRow + 1), "總工數");
+
+    // 設置底色為黑色 (FFDC00)
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))
+        ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))
+        ->getFill()->getStartColor()->setRGB('FFDC00');
+
     // 設置居中對齊
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))
         ->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))
         ->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
     // 設置加粗字體
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")->getFont()->setBold(true);
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))->getFont()->setBold(true);
 
     // 設置字體大小為 12
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))
         ->getFont()->setSize(12);
 
     // 設置四邊框為黑色細線
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")->applyFromArray([
+    $sheet->getStyle("A{$totalRow}:B" . ($totalRow + 1))->applyFromArray([
         'alignment' => [
             'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
             'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
@@ -347,12 +377,6 @@ function member_info($members, $sheet, $startRow = 4)
         ],
         'font' => ['bold' => true],
     ]);
-
-    // 設置合計列底色為 FFDC00
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")
-        ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-    $sheet->getStyle("A{$totalRow}:B{$totalRow}")
-        ->getFill()->getStartColor()->setRGB('FFDC00');
 }
 // 支援團隊報表
 function support_report($start_date, $end_date, $member_teamwork, $sheet)
@@ -370,120 +394,113 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
     // 整理資料：按 ID 與 dispatch_day 分組
     $teamwork_map = [];
     foreach ($member_teamwork as $entry) {
-        $teamwork_map[$entry['id']][$entry['dispatch_day']] = $entry;
+        $teamwork_map[$entry['dispatch_day']] = $entry;
     }
 
-    // 開始列偏移（假設日期從第 4 列開始）
-    $column_offset = 2;
+    // 開始列偏移與行高
+    $column_offset = 2; // 起始從 C 欄 (0-indexed 所以為 2)
     $initial_row = 4; // 每個 ID 起始行
-    $block_height = 3; // 每個 ID 的區塊高度
+    $block_height = 6; // 每個 ID 的區塊高度
 
     // 計算最後一欄的字母
     $last_column_index = $column_offset + $total_days;
     $last_column_letter = \PHPExcel_Cell::stringFromColumnIndex($last_column_index);
 
     // 初始化每日加總數組
-    $daily_totals = array_fill(1, $total_days, 0);
+    $daily_totals = array_fill(1, $total_days, ['manpower' => 0, 'workinghours' => 0]);
 
     foreach ($teamwork_map as $id => $dispatches) {
         $current_row = $initial_row;
-        $total_hours = 0;
 
-        foreach ($dispatches as $dispatch_day => $entry) {
-            $columnIndex = $dispatch_day - 1; // 對應到日期的列
-            $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $columnIndex);
+        // 小隊標題
+        $sheet->mergeCells("C{$current_row}:F{$current_row}");
+        $sheet->setCellValue("C{$current_row}", "小隊");
+        $current_row++;
 
-            // 設置 Attendance Time
-            if (isset($entry['attendance_time'])) {
-                $sheet->setCellValue("{$columnLetter}{$current_row}", $entry['attendance_time']);
-                $total_hours += $entry['attendance_time']; // 累加總時數
-                $daily_totals[$dispatch_day] += $entry['attendance_time']; // 每日加總
-            }
+        // 第二列
+        $sheet->setCellValue("C{$current_row}", "人數");
+        $sheet->setCellValue("D{$current_row}", "7");
+        $sheet->setCellValue("E{$current_row}", "工數");
+        $sheet->setCellValue("F{$current_row}", "7");
+        $current_row++;
 
-            // 設置 Attendance Status 與 Construction Site
-            if (isset($entry['attendance_status']) && $entry['attendance_status'] === "支援" && isset($entry['construction_site'])) {
-                $sheet->setCellValue("{$columnLetter}" . ($current_row + 1), $entry['attendance_status'] . $entry['construction_site']);
-            }
+        // 第三列：被支援移工
+        $sheet->mergeCells("C{$current_row}:F{$current_row}");
+        $sheet->setCellValue("C{$current_row}", "被支援移工");
+        $current_row++;
 
-            // 設置 Transition 與 Transition Team
-            if (isset($entry['transition']) && $entry['transition'] === "Y" && isset($entry['transition_team'])) {
-                $sheet->setCellValue("{$columnLetter}" . ($current_row + 2), $entry['transition_team']);
+        // 第四列
+        $sheet->setCellValue("C{$current_row}", "人數");
+        $sheet->setCellValue("D{$current_row}", "7");
+        $sheet->setCellValue("E{$current_row}", "工數");
+        $sheet->setCellValue("F{$current_row}", "7");
+        $current_row++;
+
+        // 第五列：被支援外調
+        $sheet->mergeCells("C{$current_row}:F{$current_row}");
+        $sheet->setCellValue("C{$current_row}", "被支援外調");
+        $current_row++;
+
+        // 第六列
+        $sheet->setCellValue("C{$current_row}", "人數");
+        $sheet->setCellValue("D{$current_row}", "7");
+        $sheet->setCellValue("E{$current_row}", "工數");
+        $sheet->setCellValue("F{$current_row}", "7");
+
+        // 設置區塊內儲存格的虛線邊框
+        for ($row = $initial_row; $row < $initial_row + $block_height; $row++) {
+            for ($col = $column_offset; $col <= $column_offset + 3; $col++) {
+                $cell = \PHPExcel_Cell::stringFromColumnIndex($col) . $row;
+                $sheet->getStyle($cell)->applyFromArray([
+                    'borders' => [
+                        'allborders' => [
+                            'style' => PHPExcel_Style_Border::BORDER_DOTTED, // 黑色虛線
+                            'color' => ['argb' => 'FF000000'],
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                        'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
             }
         }
 
-        // 在最後一欄輸入總時數並合併儲存格（垂直兩格）
-        $total_hours_cell = "{$last_column_letter}{$current_row}";
-        $sheet->setCellValue($total_hours_cell, (string) ($total_hours));
-        $sheet->mergeCells("{$total_hours_cell}:{$last_column_letter}" . ($current_row + 2)); // 合併下兩格
-
+          // 設置每個區塊的外框
+          $block_range = "C" . ($initial_row) . ":F" . ($initial_row + $block_height - 1);
+          $sheet->getStyle($block_range)->applyFromArray([
+              'borders' => [
+                  'outline' => [
+                      'style' => PHPExcel_Style_Border::BORDER_THIN, // 黑色細實線
+                      'color' => ['argb' => 'FF000000'],
+                  ],
+              ],
+          ]);
         // 每個 ID 的資料結束後，移動到下一區塊
         $initial_row += $block_height;
     }
-
 
     // 設置最後一列的每日加總
     $total_row = $initial_row; // 設定最後一列的位置
     for ($day = 1; $day <= $total_days; $day++) {
         $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + ($day - 1));
-        $sheet->setCellValue("{$columnLetter}{$total_row}", (string) ($daily_totals[$day]));
+        $sheet->setCellValue("{$columnLetter}{$total_row}", (string) $daily_totals[$day]['manpower']);
+        $sheet->setCellValue("{$columnLetter}" . ($total_row + 1), (string) $daily_totals[$day]['workinghours']);
+
         // 設置合計列底色為 FFDC00
         $sheet->getStyle("{$columnLetter}{$total_row}")
             ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
         $sheet->getStyle("{$columnLetter}{$total_row}")
             ->getFill()->getStartColor()->setRGB('FFDC00');
-    }
 
-    // 設置儲存格樣式（判斷有無值）
-    for ($row = 4; $row <= $total_row; $row++) {
-        for ($col = $column_offset; $col <= $last_column_index; $col++) {
-            $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($col);
-            $cellValue = $sheet->getCell("{$columnLetter}{$row}")->getValue();
-
-            if ($cellValue) {
-                // 儲存格有值
-                $sheet->getColumnDimension($columnLetter)->setWidth(9);
-            } else {
-                // 儲存格無值
-                $sheet->getColumnDimension($columnLetter)->setWidth(3);
-            }
-
-            $sheet->getRowDimension($row)->setRowHeight(20);
-
-            // 設置樣式
-
-            if($row===$total_row){
-                $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray([
-                    'alignment' => [
-                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                        'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-                    ],
-                    'borders' => [
-                        'allborders' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THICK,
-                            'color' => ['argb' => 'FF000000'],
-                        ],
-                    ],
-                    'font' => ['bold' => true],
-                ]);
-            }else{
-                $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray([
-                    'alignment' => [
-                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                        'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-                    ],
-                    'borders' => [
-                        'allborders' => [
-                            'style' => PHPExcel_Style_Border::BORDER_THIN,
-                            'color' => ['argb' => 'FF000000'],
-                        ],
-                    ],
-                    'font' => ['bold' => true],
-                ]);
-            }
-            
-        }
+        $sheet->getStyle("{$columnLetter}" . ($total_row + 1))
+            ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle("{$columnLetter}" . ($total_row + 1))
+            ->getFill()->getStartColor()->setRGB('FFDC00');
     }
 }
+
+
 
 
 
