@@ -39,12 +39,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '2',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
 
     [
@@ -54,14 +54,14 @@ $member_teamwork = [
         'team_name' => '電工C組',
         'dispatch_day' => '2',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
-   
+
     [
         'id' => '2',
         'dispatch_company' => '華碩',
@@ -69,12 +69,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '3',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
     [
         'id' => '2',
@@ -83,12 +83,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '5',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
     [
         'id' => '3',
@@ -97,12 +97,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '6',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
     [
         'id' => '4',
@@ -111,14 +111,14 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '8',
         'construction_site' => '新竹廠',
-        'manpower'=> '10',
-        'workinghours'=> '4',
-        'manpower_supported'=> '10',
-        'workinghours_supported'=> '4',
-        'foreign_manpower_supported'=> '2',
-        'foreign_workinghours_supported'=> '2',
+        'manpower' => '10',
+        'workinghours' => '4',
+        'manpower_supported' => '10',
+        'workinghours_supported' => '4',
+        'foreign_manpower_supported' => '2',
+        'foreign_workinghours_supported' => '2',
     ],
-  
+
 ];
 
 // foreach ($member_teamwork as $key => $value) {
@@ -149,7 +149,7 @@ header_first($first_rows, $sheet);
 header_last($days, $sheet);
 
 // 列出所有日期
-Excel_show_days($start_date,$days, $sheet);
+Excel_show_days($start_date, $days, $sheet);
 
 // 員工資訊
 member_info($member, $sheet);
@@ -158,7 +158,7 @@ member_info($member, $sheet);
 support_report($start_date, $end_date, $member_teamwork, $sheet);
 
 // 儲存檔案
-$file = 'demo_' . date('222') . '.xlsx';
+$file = 'demo_' . date('333') . '.xlsx';
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 $objWriter->save($file);
 
@@ -284,11 +284,11 @@ function Excel_show_days($start_date, $days, $sheet)
 
     for ($i = 0; $i < $days; $i++) {
         $current_date = (clone $date)->modify("+$i days")->format('d'); // 每次加一天
-        
+
         // 計算起始和結束欄位字母
         $startColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4);
         $endColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4 + 3);
-        
+
         // 合併儲存格
         $mergedCells = $startColumnLetter . '3:' . $endColumnLetter . '3';
         $sheet->mergeCells($mergedCells);
@@ -348,19 +348,19 @@ function member_info($members, $sheet, $startRow = 4)
 
         // 設置四邊框為黑色細線
         $sheet->getStyle("A{$currentRow}:B" . ($currentRow + 5))
-        ->applyFromArray([
-            'alignment' => [
-                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
-                'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
-            ],
-            'borders' => [
-                'allborders' => [
-                    'style' => PHPExcel_Style_Border::BORDER_THIN,
-                    'color' => ['argb' => 'FF000000'],
+            ->applyFromArray([
+                'alignment' => [
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                    'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER,
                 ],
-            ],
-            'font' => ['bold' => true],
-        ]);
+                'borders' => [
+                    'allborders' => [
+                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'color' => ['argb' => 'FF000000'],
+                    ],
+                ],
+                'font' => ['bold' => true],
+            ]);
     }
 
     // 合計列
@@ -412,8 +412,6 @@ function member_info($members, $sheet, $startRow = 4)
     ]);
 }
 // 支援團隊報表
-support_report($start_date, $end_date, $member_teamwork, $sheet);
-
 function support_report($start_date, $end_date, $member_teamwork, $sheet)
 {
     if ($sheet === null) {
@@ -423,75 +421,135 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
     // 計算總天數
     $total_days = Total_days($start_date, $end_date);
 
-    // 起始欄位和行
+    // 開始日期的時間戳
+    $start_timestamp = strtotime($start_date);
+
+    // 整理資料：按 ID 與 dispatch_day 分組
+    $teamwork_map = [];
+    foreach ($member_teamwork as $entry) {
+        $teamwork_map[$entry['id']][$entry['dispatch_day']] = $entry;
+    }
+
+    // 開始列偏移（假設日期從第 4 列開始）
     $column_offset = 2; // 起始於 C 欄
     $initial_row = 4; // 每組數據的初始行
     $block_height = 6; // 每組數據佔用行數
 
-    // 生成最後一欄的字母
-    $last_column_index = $column_offset + $total_days - 1;
+    // 計算最後一欄的字母
+    $last_column_index = $column_offset + $total_days * 4 - 1;
     $last_column_letter = \PHPExcel_Cell::stringFromColumnIndex($last_column_index);
 
-    // 遍歷每個數據
+    // 初始化每日加總數組
+    $daily_totals = array_fill(1, $total_days, 0);
 
-
-    foreach ($member_teamwork as $dispatches) {
-        if(($dispatches['dispatch_day'] - 1)<2){
-            $columnIndex = ($dispatches['dispatch_day'] - 1);
-        }else{
-            $columnIndex = ($dispatches['dispatch_day'] - 1) + 4;
-        }
-
-        $column_base = $column_offset + $columnIndex-1;
-
-        // 計算各列字母
-        $team_name_format = \PHPExcel_Cell::stringFromColumnIndex($column_base);
-        $team_name_format2 = \PHPExcel_Cell::stringFromColumnIndex($column_base + 1);
-        $team_name_format3 = \PHPExcel_Cell::stringFromColumnIndex($column_base + 2);
-        $team_name_format4 = \PHPExcel_Cell::stringFromColumnIndex($column_base + 3);
-
-        // 當前行位置
+    foreach ($teamwork_map as $id => $dispatches) {
         $current_row = $initial_row;
+        $total_manpower = 0;
+        $total_hours = 0;
 
-        // 小隊標題
-        $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
-        $sheet->setCellValue("{$team_name_format}{$current_row}", $dispatches['team_name'] . "小隊");
-        $current_row++;
+        foreach ($dispatches as $dispatch_day => $entry) {
+            $column_base = ($dispatch_day - 1) * 4; // 基礎列索引
 
-        // 第二列
-        $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
-        $sheet->setCellValue("{$team_name_format2}{$current_row}", $dispatches['manpower']);
-        $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
-        $sheet->setCellValue("{$team_name_format4}{$current_row}", $dispatches['workinghours']);
-        $current_row++;
+            // 計算各列字母
+            $team_name_format = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base);
+            $team_name_format2 = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + 1);
+            $team_name_format3 = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + 2);
+            $team_name_format4 = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + 3);
 
-        // 第三列：被支援移工
-        $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
-        $sheet->setCellValue("{$team_name_format}{$current_row}", "被支援移工");
-        $current_row++;
+            $start_row = $current_row; // 記錄起始行
 
-        // 第四列
-        $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
-        $sheet->setCellValue("{$team_name_format2}{$current_row}", $dispatches['foreign_manpower_supported']);
-        $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
-        $sheet->setCellValue("{$team_name_format4}{$current_row}", $dispatches['foreign_workinghours_supported']);
-        $current_row++;
+            // 設置 team_name
+            if (isset($entry['team_name'])) {
+                $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
+                $sheet->setCellValue("{$team_name_format}{$current_row}", $entry['team_name'] . "小隊");
+                $current_row++;
+            }
 
-        // 第五列：被支援外調
-        $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
-        $sheet->setCellValue("{$team_name_format}{$current_row}", "被支援外調");
-        $current_row++;
+            // 設置 manpower 與 workinghours
+            if (isset($entry['manpower']) && isset($entry['workinghours'])) {
+                $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
+                $sheet->setCellValue("{$team_name_format2}{$current_row}", $entry['manpower']);
+                $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
+                $sheet->setCellValue("{$team_name_format4}{$current_row}", $entry['workinghours']);
+                for ($col = 0; $col < 4; $col++) {
+                    $cell = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + $col) . $current_row;
+                    $sheet->getStyle($cell)->applyFromArray([
+                        'borders' => [
+                            'allborders' => [
+                                'style' => PHPExcel_Style_Border::BORDER_THIN, // 黑色細線
+                                'color' => ['argb' => 'FF000000'],
+                            ],
+                        ],
+                    ]);
+                }
+                
 
-        // 第六列
-        $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
-        $sheet->setCellValue("{$team_name_format2}{$current_row}", $dispatches['manpower_supported']);
-        $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
-        $sheet->setCellValue("{$team_name_format4}{$current_row}", $dispatches['workinghours_supported']);
-        $current_row += $block_height;
+                $total_manpower += $entry['manpower'];
+                $total_hours += $entry['workinghours'];
+                $current_row++;
+            }
+
+            // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
+            if (isset($entry['foreign_manpower_supported']) && isset($entry['foreign_workinghours_supported'])) {
+                $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
+                $sheet->setCellValue("{$team_name_format}{$current_row}", "被支援移工");
+                $current_row++;
+
+                $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
+                $sheet->setCellValue("{$team_name_format2}{$current_row}", $entry['foreign_manpower_supported']);
+                $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
+                $sheet->setCellValue("{$team_name_format4}{$current_row}", $entry['foreign_workinghours_supported']);
+
+                for ($col = 0; $col < 4; $col++) {
+                    $cell = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + $col) . $current_row;
+                    $sheet->getStyle($cell)->applyFromArray([
+                        'borders' => [
+                            'allborders' => [
+                                'style' => PHPExcel_Style_Border::BORDER_THIN, // 黑色細線
+                                'color' => ['argb' => 'FF000000'],
+                            ],
+                        ],
+                    ]);
+                }
+
+                $total_manpower += $entry['foreign_manpower_supported'];
+                $total_hours += $entry['foreign_workinghours_supported'];
+                $current_row++;
+            }
+
+            // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
+            if (isset($entry['foreign_manpower_supported']) && isset($entry['foreign_workinghours_supported'])) {
+                $sheet->mergeCells("{$team_name_format}{$current_row}:{$team_name_format4}{$current_row}");
+                $sheet->setCellValue("{$team_name_format}{$current_row}", "被支援外調");
+                $current_row++;
+
+                $sheet->setCellValue("{$team_name_format}{$current_row}", "人數");
+                $sheet->setCellValue("{$team_name_format2}{$current_row}", $entry['manpower_supported']);
+                $sheet->setCellValue("{$team_name_format3}{$current_row}", "工數");
+                $sheet->setCellValue("{$team_name_format4}{$current_row}", $entry['workinghours_supported']);
+
+                for ($col = 0; $col < 4; $col++) {
+                    $cell = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base + $col) . $current_row;
+                    $sheet->getStyle($cell)->applyFromArray([
+                        'borders' => [
+                            'allborders' => [
+                                'style' => PHPExcel_Style_Border::BORDER_THIN, // 黑色細線
+                                'color' => ['argb' => 'FF000000'],
+                            ],
+                        ],
+                    ]);
+                }
+
+
+                $total_manpower += $entry['foreign_manpower_supported'];
+                $total_hours += $entry['foreign_workinghours_supported'];
+                $current_row++;
+            }
+        }
 
         // 設置區塊內儲存格的虛線邊框
         for ($row = $initial_row; $row < $initial_row + $block_height; $row++) {
-            for ($col = $column_offset; $col <= $column_offset + 3; $col++) {
+            for ($col = $column_offset; $col <= $last_column_index; $col++) {
                 $cell = \PHPExcel_Cell::stringFromColumnIndex($col) . $row;
                 $sheet->getStyle($cell)->applyFromArray([
                     'borders' => [
@@ -508,38 +566,31 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
             }
         }
 
-          // 設置每個區塊的外框
-          $block_range = $team_name_format . ($initial_row) . ":".$team_name_format4 . ($initial_row + $block_height - 1);
-          $sheet->getStyle($block_range)->applyFromArray([
-              'borders' => [
-                  'outline' => [
-                      'style' => PHPExcel_Style_Border::BORDER_THIN, // 黑色細實線
-                      'color' => ['argb' => 'FF000000'],
-                  ],
-              ],
-          ]);
+      
+
+        // 在最後一欄輸入總時數
+        $total_hours_cell = "{$last_column_letter}{$current_row}";
+        $sheet->setCellValue($total_hours_cell, (string) $total_hours);
+
         // 每個 ID 的資料結束後，移動到下一區塊
         $initial_row += $block_height;
     }
 
-    // // 設置最後一列的每日加總
-    // $total_row = $initial_row; // 設定最後一列的位置
-    // for ($day = 1; $day <= $total_days; $day++) {
-    //     $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + ($day - 1));
-    //     $sheet->setCellValue("{$columnLetter}{$total_row}", (string) $daily_totals[$day]['manpower']);
-    //     $sheet->setCellValue("{$columnLetter}" . ($total_row + 1), (string) $daily_totals[$day]['workinghours']);
 
-    //     // 設置合計列底色為 FFDC00
-    //     $sheet->getStyle("{$columnLetter}{$total_row}")
-    //         ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-    //     $sheet->getStyle("{$columnLetter}{$total_row}")
-    //         ->getFill()->getStartColor()->setRGB('FFDC00');
 
-    //     $sheet->getStyle("{$columnLetter}" . ($total_row + 1))
-    //         ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-    //     $sheet->getStyle("{$columnLetter}" . ($total_row + 1))
-    //         ->getFill()->getStartColor()->setRGB('FFDC00');
-    // }
+    // 設置最後一列的每日加總
+    $total_row = $initial_row; // 設定最後一列的位置
+    for ($day = 1; $day <= $total_days; $day++) {
+        $columnLetter = \PHPExcel_Cell::stringFromColumnIndex($column_offset + ($day - 1));
+        $sheet->setCellValue("{$columnLetter}{$total_row}", (string) ($daily_totals[$day]));
+        // 設置合計列底色為 FFDC00
+        $sheet->getStyle("{$columnLetter}{$total_row}")
+            ->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle("{$columnLetter}{$total_row}")
+            ->getFill()->getStartColor()->setRGB('FFDC00');
+    }
+    // 每個 ID 的資料結束後，移動到下一區塊
+    $initial_row += $block_height;
 }
 
 
