@@ -34,34 +34,20 @@ $member = [
 ];
 
 $member_teamwork = [
-    [
-        'id' => '1',
-        'dispatch_company' => '台積電',
-        'team_id' => '2024A',
-        'team_name' => '電工A組',
-        'dispatch_day' => '2',
-        'construction_site' => '新竹廠',
-        'manpower' => '10',
-        'workinghours' => '4',
-        'manpower_supported' => '10',
-        'workinghours_supported' => '4',
-        'foreign_manpower_supported' => '2',
-        'foreign_workinghours_supported' => '2',
-    ],
 
     [
-        'id' => '2',
+        'id' => '1',
         'dispatch_company' => '華碩',
         'team_id' => '2024A',
         'team_name' => '電工C組',
         'dispatch_day' => '2',
         'construction_site' => '新竹廠',
-        'manpower' => '10',
-        'workinghours' => '4',
-        'manpower_supported' => '10',
-        'workinghours_supported' => '4',
-        'foreign_manpower_supported' => '2',
-        'foreign_workinghours_supported' => '2',
+        'manpower' => '1',
+        'workinghours' => '1',
+        'manpower_supported' => '1',
+        'workinghours_supported' => '1',
+        'foreign_manpower_supported' => '1',
+        'foreign_workinghours_supported' => '1',
     ],
 
     [
@@ -71,10 +57,10 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '3',
         'construction_site' => '新竹廠',
-        'manpower' => '10',
-        'workinghours' => '4',
-        'manpower_supported' => '10',
-        'workinghours_supported' => '4',
+        'manpower' => '2',
+        'workinghours' => '2',
+        'manpower_supported' => '2',
+        'workinghours_supported' => '2',
         'foreign_manpower_supported' => '2',
         'foreign_workinghours_supported' => '2',
     ],
@@ -85,12 +71,26 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '5',
         'construction_site' => '新竹廠',
-        'manpower' => '10',
-        'workinghours' => '4',
-        'manpower_supported' => '10',
-        'workinghours_supported' => '4',
-        'foreign_manpower_supported' => '2',
-        'foreign_workinghours_supported' => '2',
+        'manpower' => '6',
+        'workinghours' => '6',
+        'manpower_supported' => '6',
+        'workinghours_supported' => '6',
+        'foreign_manpower_supported' => '6',
+        'foreign_workinghours_supported' => '6',
+    ],
+    [
+        'id' => '2',
+        'dispatch_company' => '華碩',
+        'team_id' => '2024A',
+        'team_name' => '電工A組',
+        'dispatch_day' => '4',
+        'construction_site' => '新竹廠',
+        'manpower' => '3',
+        'workinghours' => '3',
+        'manpower_supported' => '3',
+        'workinghours_supported' => '3',
+        'foreign_manpower_supported' => '3',
+        'foreign_workinghours_supported' => '3',
     ],
     [
         'id' => '3',
@@ -99,12 +99,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '6',
         'construction_site' => '新竹廠',
-        'manpower' => '10',
+        'manpower' => '4',
         'workinghours' => '4',
-        'manpower_supported' => '10',
+        'manpower_supported' => '4',
         'workinghours_supported' => '4',
-        'foreign_manpower_supported' => '2',
-        'foreign_workinghours_supported' => '2',
+        'foreign_manpower_supported' => '4',
+        'foreign_workinghours_supported' => '4',
     ],
     [
         'id' => '4',
@@ -113,12 +113,12 @@ $member_teamwork = [
         'team_name' => '電工A組',
         'dispatch_day' => '8',
         'construction_site' => '新竹廠',
-        'manpower' => '10',
-        'workinghours' => '4',
-        'manpower_supported' => '10',
-        'workinghours_supported' => '4',
-        'foreign_manpower_supported' => '2',
-        'foreign_workinghours_supported' => '2',
+        'manpower' => '5',
+        'workinghours' => '5',
+        'manpower_supported' => '5',
+        'workinghours_supported' => '5',
+        'foreign_manpower_supported' => '5',
+        'foreign_workinghours_supported' => '5',
     ],
 
 ];
@@ -451,14 +451,13 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
     // 計算總天數
     $total_days = Total_days($start_date, $end_date);
 
-    // 開始日期的時間戳
-    $start_timestamp = strtotime($start_date);
-
     // 整理資料：按 ID 與 dispatch_day 分組
     $teamwork_map = [];
     foreach ($member_teamwork as $entry) {
         $teamwork_map[$entry['id']][$entry['dispatch_day']] = $entry;
     }
+
+    dd($teamwork_map);
 
     // 開始列偏移（假設日期從第 4 列開始）
     $column_offset = 2; // 起始於 C 欄
@@ -473,11 +472,11 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
     $daily_totals = array_fill(1, $total_days, 0);
 
     foreach ($teamwork_map as $id => $dispatches) {
-        $current_row = $initial_row;
         $total_manpower = 0;
         $total_hours = 0;
 
         foreach ($dispatches as $dispatch_day => $entry) {
+            $current_row = $initial_row;
             $column_base = ($dispatch_day - 1) * 4; // 基礎列索引
             // 計算各列字母
             $column_team_start = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base);
