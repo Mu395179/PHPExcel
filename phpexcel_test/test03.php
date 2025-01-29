@@ -12,7 +12,7 @@ $sheet = $objPHPExcel->getActiveSheet();
 
 // 時間範圍
 $start_date = "2024-09-01";
-$end_date = "2024-09-15";
+$end_date = "2024-09-10";
 
 $member = [
     [
@@ -317,6 +317,34 @@ function Excel_show_days($start_date, $days, $sheet)
         ];
         $sheet->getStyle($mergedCells)->applyFromArray($styleBorders);
     }
+    // 新增最後的「合計」欄位
+    $finalColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $days * 4);
+
+    // 設定「合計」文字
+    $sheet->setCellValue($finalColumnLetter . '3', '合計');
+
+    // 設定文字置中
+    $sheet->getStyle($finalColumnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle($finalColumnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+    // 設定底色
+    $sheet->getStyle($finalColumnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle($finalColumnLetter . '3')->getFill()->getStartColor()->setRGB('FFD700'); // 金色
+
+    // 設定邊框（細線）
+    $sheet->getStyle($finalColumnLetter . '3')->applyFromArray([
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // 黑色
+            ],
+        ],
+    ]);
+
+      // 設定所有欄位寬度為12
+      for ($col = 0; $col <= (2 + $days * 4 + 1); $col++) {
+        $sheet->getColumnDimensionByColumn($col)->setWidth(8);
+    }
 }
 
 
@@ -438,7 +466,7 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
     $block_height = 6; // 每組數據佔用行數
 
     // 計算最後一欄的字母
-    $last_column_index = $column_offset + $total_days * 4 - 1;
+    $last_column_index = $column_offset + $total_days * 4 ;
     $last_column_letter = \PHPExcel_Cell::stringFromColumnIndex($last_column_index);
 
     // 初始化每日加總數組
@@ -537,8 +565,9 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
 
         }
         // 在最後一欄輸入總時數
-        $total_hours_cell = "{$last_column_letter}{$current_row}";
-        $sheet->setCellValue($total_hours_cell, (string) $total_hours);
+        $lest_row_index = $current_row - 6;
+        $total_hours_cell = "{$last_column_letter}{$lest_row_index}";
+        $sheet->setCellValue($total_hours_cell,"總時數:". (string) $total_hours);
 
         // 每個 ID 的資料結束後，移動到下一區塊
         $initial_row += $block_height;
