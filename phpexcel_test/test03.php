@@ -346,6 +346,71 @@ function Excel_show_days($start_date, $days, $sheet)
     }
 }
 
+function form_style($sheet, $start_date,$days,$member_count){
+    $date = new DateTime($start_date);
+
+    if ($sheet === null) {
+        throw new Exception("Invalid sheet object.");
+    }
+
+    for ($i = 0; $i < $days; $i++) {
+        $current_date = (clone $date)->modify("+$i days")->format('d'); // 每次加一天
+
+        // 計算起始和結束欄位字母
+        $startColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4);
+        $endColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $i * 4 + 3);
+
+        // 合併儲存格
+        $mergedCells = $startColumnLetter . '3:' . $endColumnLetter . '3';
+        $sheet->mergeCells($mergedCells);
+
+        // 設定日期
+        $sheet->setCellValue($startColumnLetter . '3', $current_date);
+
+        // 設定文字置中
+        $sheet->getStyle($mergedCells)->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($mergedCells)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+        // 設定底色
+        $sheet->getStyle($mergedCells)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        $sheet->getStyle($mergedCells)->getFill()->getStartColor()->setRGB('7FDBFF'); // 設置底色
+
+        // 設定邊框（細線）
+        $styleBorders = [
+            'borders' => [
+                'allborders' => [
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'], // 黑色
+                ],
+            ],
+        ];
+        $sheet->getStyle($mergedCells)->applyFromArray($styleBorders);
+    }
+    // 新增最後的「合計」欄位
+    $finalColumnLetter = PHPExcel_Cell::stringFromColumnIndex(2 + $days * 4);
+
+    // 設定「合計」文字
+    $sheet->setCellValue($finalColumnLetter . '3', '合計');
+
+    // 設定文字置中
+    $sheet->getStyle($finalColumnLetter . '3')->getAlignment()->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle($finalColumnLetter . '3')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+    // 設定底色
+    $sheet->getStyle($finalColumnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle($finalColumnLetter . '3')->getFill()->getStartColor()->setRGB('FFD700'); // 金色
+
+    // 設定邊框（細線）
+    $sheet->getStyle($finalColumnLetter . '3')->applyFromArray([
+        'borders' => [
+            'allborders' => [
+                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                'color' => ['argb' => 'FF000000'], // 黑色
+            ],
+        ],
+    ]);
+}
+
 
 
 //員工資訊 
@@ -473,7 +538,9 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
         $total_hours = 0;
 
         foreach ($dispatches as $dispatch_day => $entry) {
+            $entry = $dispatches[$dispatch_day] ?? null; // 取出當天的數據，沒有則為 null
             $current_row = $initial_row;
+            $merge_end_row = $current_row + 3;
             $column_base = ($dispatch_day - 1) * 4; // 基礎列索引
             // 計算各列字母
             $column_team_start = \PHPExcel_Cell::stringFromColumnIndex($column_offset + $column_base);
@@ -494,77 +561,77 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
                     'vertical' => PHPExcel_Style_Alignment::VERTICAL_CENTER, // 文字垂直置中
                 ],
             ];
-
             $start_row = $current_row; // 記錄起始行
 
-            // 設置 team_name
-            if (isset($entry['team_name'])) {
-                $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
-                $sheet->setCellValue("{$column_team_start}{$current_row}", $entry['team_name'] . "小隊");
-                // 套用樣式到合併的儲存格
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $current_row++;
-            }
+                if (isset($entry['team_name'])) {
+                    // 設置 team_name
+                    $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
+                    $sheet->setCellValue("{$column_team_start}{$current_row}", $entry['team_name'] . "小隊");
+                    // 套用樣式到合併的儲存格
+                    $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                    $current_row++;
+                    // 設置 manpower 與 workinghours
+                    if (isset($entry['manpower']) && isset($entry['workinghours'])) {
+                        $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
+                        $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['manpower']);
+                        $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
+                        $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['workinghours']);
+                        // 套用邊框樣式
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $total_manpower += $entry['manpower'];
+                        $total_hours += $entry['workinghours'];
+                        $daily_totals_manpower[$dispatch_day] += $entry['manpower']; // 每日加總人工數
+                        $daily_totals_workinghours[$dispatch_day] += $entry['workinghours']; // 每日加總工時數
 
-            // 設置 manpower 與 workinghours
-            if (isset($entry['manpower']) && isset($entry['workinghours'])) {
-                $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
-                $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['manpower']);
-                $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
-                $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['workinghours']);
-                // 套用邊框樣式
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $total_manpower += $entry['manpower'];
-                $total_hours += $entry['workinghours'];
-                $daily_totals_manpower[$dispatch_day] += $entry['manpower']; // 每日加總人工數
-                $daily_totals_workinghours[$dispatch_day] += $entry['workinghours']; // 每日加總工時數
+                        $current_row++;
 
-                $current_row++;
+                    }
 
-            }
+                    // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
+                    if (isset($entry['foreign_manpower_supported']) && isset($entry['foreign_workinghours_supported'])) {
+                        $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $sheet->setCellValue("{$column_team_start}{$current_row}", "被支援移工");
+                        // 套用邊框樣式
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $current_row++;
 
-            // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
-            if (isset($entry['foreign_manpower_supported']) && isset($entry['foreign_workinghours_supported'])) {
-                $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $sheet->setCellValue("{$column_team_start}{$current_row}", "被支援移工");
-                // 套用邊框樣式
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $current_row++;
+                        $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
+                        $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['foreign_manpower_supported']);
+                        $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
+                        $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['foreign_workinghours_supported']);
+                        // 套用邊框樣式
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $total_manpower += $entry['foreign_manpower_supported'];
+                        $total_hours += $entry['foreign_workinghours_supported'];
+                        $daily_totals_manpower[$dispatch_day] += $entry['foreign_manpower_supported']; // 每日加總人工數
+                        $daily_totals_workinghours[$dispatch_day] += $entry['foreign_workinghours_supported']; // 每日加總工時數
+                        $current_row++;
+                    }
 
-                $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
-                $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['foreign_manpower_supported']);
-                $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
-                $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['foreign_workinghours_supported']);
-                // 套用邊框樣式
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $total_manpower += $entry['foreign_manpower_supported'];
-                $total_hours += $entry['foreign_workinghours_supported'];
-                $daily_totals_manpower[$dispatch_day] += $entry['foreign_manpower_supported']; // 每日加總人工數
-                $daily_totals_workinghours[$dispatch_day] += $entry['foreign_workinghours_supported']; // 每日加總工時數
-                $current_row++;
-            }
+                    // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
+                    if (isset($entry['manpower_supported']) && isset($entry['workinghours_supported'])) {
+                        $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
+                        $sheet->setCellValue("{$column_team_start}{$current_row}", "被支援外調");
+                        // 套用邊框樣式
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $current_row++;
 
-            // 設置 foreign_manpower_supported 與 foreign_workinghours_supported
-            if (isset($entry['manpower_supported']) && isset($entry['workinghours_supported'])) {
-                $sheet->mergeCells("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}");
-                $sheet->setCellValue("{$column_team_start}{$current_row}", "被支援外調");
-                // 套用邊框樣式
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $current_row++;
-
-                $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
-                $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['manpower_supported']);
-                $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
-                $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['workinghours_supported']);
-                // 套用邊框樣式
-                $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
-                $total_manpower += $entry['manpower_supported'];
-                $total_hours += $entry['workinghours_supported'];
-                $daily_totals_manpower[$dispatch_day] += $entry['manpower_supported']; // 每日加總人工數
-                $daily_totals_workinghours[$dispatch_day] += $entry['foreign_workinghours_supported']; // 每日加總工時數
-                $current_row++;
-            }
+                        $sheet->setCellValue("{$column_team_start}{$current_row}", "人數");
+                        $sheet->setCellValue("{$column_team_mid_1}{$current_row}", $entry['manpower_supported']);
+                        $sheet->setCellValue("{$column_team_mid_2}{$current_row}", "工數");
+                        $sheet->setCellValue("{$column_team_end}{$current_row}", $entry['workinghours_supported']);
+                        // 套用邊框樣式
+                        $sheet->getStyle("{$column_team_start}{$current_row}:{$column_team_end}{$current_row}")->applyFromArray($styleArray);
+                        $total_manpower += $entry['manpower_supported'];
+                        $total_hours += $entry['workinghours_supported'];
+                        $daily_totals_manpower[$dispatch_day] += $entry['manpower_supported']; // 每日加總人工數
+                        $daily_totals_workinghours[$dispatch_day] += $entry['workinghours_supported']; // 每日加總工時數
+                        $current_row++;
+                    }
+                }else{
+                    dd($entry);
+                }
 
         }
         // 在最後一欄輸入總時數
