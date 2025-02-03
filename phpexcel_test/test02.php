@@ -329,7 +329,7 @@ function Excel_show_days($start_date, $days, $sheet)
 
     // 設定底色
     $sheet->getStyle($finalColumnLetter . '3')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
-    $sheet->getStyle($finalColumnLetter . '3')->getFill()->getStartColor()->setRGB('FFD700'); // 金色
+    $sheet->getStyle($finalColumnLetter . '3')->getFill()->getStartColor()->setRGB('7FDBFF'); // 金色
 
     // 設定邊框（細線）
     $sheet->getStyle($finalColumnLetter . '3')->applyFromArray([
