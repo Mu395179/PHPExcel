@@ -273,7 +273,7 @@ function header_last($days, $sheet)
     $sheet->setCellValue($columnLetter . '3', '合計');
 
     // 設定列寬度為 20
-    $sheet->getColumnDimension($columnLetter)->setWidth(20);
+    $sheet->getColumnDimension($columnLetter)->setWidth(12);
 }
 
 
@@ -368,13 +368,13 @@ function form_style($sheet, $start_date, $days, $member_count)
             $currentRow = 4 + ($j * 6); // 每個成員佔 6 行
             $endcurrentRow = $currentRow + 5; // 確保總共 6 行（含起始行）
 
-            // 定義外框範圍
+            // 定義外框和內部範圍
             $range = $startColumnLetter . $currentRow . ':' . $endColumnLetter . $endcurrentRow;
 
-            // 設定外框（細線）
+            // 設定外框與內部邊框（細線）
             $styleBorders = [
                 'borders' => [
-                    'outline' => [ // 只設定外框
+                    'outline' => [ // 外框
                         'style' => PHPExcel_Style_Border::BORDER_THIN,
                         'color' => ['argb' => 'FF000000'], // 黑色
                     ],

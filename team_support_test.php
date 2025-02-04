@@ -167,7 +167,7 @@ foreach ($period as $date) {
 $days = Total_days($start_date, $end_date);
 
 // 標題
-table_title($team_name,$start_date, $end_date,$days, $sheet);
+table_title($team_name, $start_date, $end_date, $days, $sheet);
 
 // 首列表頭欄位
 $first_rows =
@@ -339,11 +339,11 @@ function Total_days($start_date, $end_date)
 }
 
 // 標題
-function table_title($name,$start_date, $end_date,$days, $sheet)
+function table_title($name, $start_date, $end_date, $days, $sheet)
 {
     $columnLetter = \PHPExcel_Cell::stringFromColumnIndex(3 + $days);
     $sheet->mergeCells('A1:' . $columnLetter . '2');
-    $sheet->setCellValue('A1',$name . $start_date."~". $end_date . '_團隊支援表');
+    $sheet->setCellValue('A1', $name . $start_date . "~" . $end_date . '_團隊支援表');
 
     // 設定儲存格高度為40
     $sheet->getRowDimension(1)->setRowHeight(20);
@@ -681,6 +681,22 @@ function support_report($start_date, $end_date, $member_teamwork, $sheet)
             $sheet->getStyle("{$columnLetter}{$row}")->applyFromArray($styleArray);
         }
     }
+
+    // 設定全表總人數與總工時
+    $final_Column_Index = $last_column_index;
+    $final_Column_Letter = PHPExcel_Cell::stringFromColumnIndex($final_Column_Index);
+    $totalManpowerCell = "{$final_Column_Letter}{$total_row}";
+
+    $sheet->setCellValue($totalManpowerCell, (string) array_sum($daily_totals));
+
+    // 設定背景顏色
+    $sheet->getStyle($totalManpowerCell)->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+    $sheet->getStyle($totalManpowerCell)->getFill()->getStartColor()->setRGB('FFDC00');
+
+    // 設定邊框、文字置中、粗體
+    $sheet->getStyle($totalManpowerCell)->applyFromArray($styleArray);
+
+
 }
 
 // Rename worksheet

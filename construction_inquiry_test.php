@@ -375,12 +375,13 @@ function form_style($sheet, $start_date, $days, $member_count)
             $styleBorders = [
                 'borders' => [
                     'outline' => [ // 只設定外框
-                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'style' => PHPExcel_Style_Border::BORDER_DASHED,
                         'color' => ['argb' => 'FF000000'], // 黑色
                     ],
                 ],
             ];
             $sheet->getStyle($range)->applyFromArray($styleBorders);
+           
         }
     }
 }
